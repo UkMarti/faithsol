@@ -1,0 +1,20 @@
+[
+  {
+    "Wallet": "HzBhg6WH4qhJZSj93cJtqZoCn8Cf2LaGR2vtYMT7QcKp",
+    "DustAccounts": 9,
+    "RecoverableSOL": 0.01835,
+    "Timestamp": "2025-04-30 18:00:00"
+  },
+  {
+    "Wallet": "GiuhJFChN86mPp3yd39N8FV3Ykcr1cGuBBgHbT2wU1Ug",
+    "DustAccounts": 12,
+    "RecoverableSOL": 0.02447,
+    "Timestamp": "2025-04-30 18:05:00"
+  },
+  {
+    "Wallet": "5ssybW6bJvoRjuMPeBTT6p7LMEjBdu7mDASaTdLqSCw6",
+    "DustAccounts": 8,
+    "RecoverableSOL": 0.01631,
+    "Timestamp": "2025-04-30 18:10:00"
+  }
+]
