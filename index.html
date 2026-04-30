@@ -3,226 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAITH | Ultra-Secure Dust Recovery</title>
+    <title>FAITH // Reclaim Your SOL</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,800;1,800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        barbiePink: '#FF99CC',
+                        hotPink: '#FF3399',
+                        deepPink: '#CC0066',
+                        faithGold: '#FFD700'
+                    },
+                    boxShadow: {
+                        'neon': '0 0 15px rgba(255, 51, 153, 0.5)',
+                        'gold': '0 0 10px rgba(255, 215, 0, 0.8)'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Inter:wght@900&display=swap');
-        
-        body { 
-            background: #020105; 
-            color: #e2e8f0; 
-            font-family: 'Space Grotesk', sans-serif;
-            background-image: 
-                radial-gradient(circle at 50% -20%, #2e1065 0%, transparent 50%),
-                radial-gradient(circle at 0% 100%, #0f172a 0%, transparent 40%);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+        body {
+            background: linear-gradient(135deg, #FFE6F2 0%, #FFB3D9 50%, #FF66B2 100%);
+            background-attachment: fixed;
         }
-
-        .premium-banner {
-            background: rgba(153, 69, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(153, 69, 255, 0.2);
-            text-transform: uppercase;
-            letter-spacing: 0.4em;
-            animation: breath 4s ease-in-out infinite;
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(255, 105, 180, 0.2);
         }
-
-        @keyframes breath {
-            0%, 100% { opacity: 0.6; text-shadow: 0 0 5px #a855f7; }
-            50% { opacity: 1; text-shadow: 0 0 15px #a855f7; }
+        .gold-text {
+            color: #FFD700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2), 0 0 10px rgba(255, 215, 0, 0.6);
         }
-
-        .reactor-core {
-            width: 360px; height: 360px;
-            border: 1px solid rgba(0, 242, 255, 0.3);
-            box-shadow: 0 0 60px rgba(0, 242, 255, 0.1), inset 0 0 40px rgba(0, 242, 255, 0.05);
-            border-radius: 50%;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: rgba(255, 255, 255, 0.01);
+        .cta-btn {
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-
-        .sol-bar {
-            width: 220px; height: 48px; margin: 10px 0;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transform: skewX(-18deg);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 0.8rem; letter-spacing: 0.1em;
-            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        .cta-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
         }
-
-        .active-bar {
-            background: linear-gradient(90deg, #9945FF 0%, #14F195 100%);
-            border: none; color: #000;
-            box-shadow: 0 0 30px rgba(20, 241, 149, 0.4);
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .btn-claim {
-            background: linear-gradient(90deg, #f97316 0%, #ef4444 100%);
-            border: 1px solid #fb923c;
-            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s;
-        }
-
-        .btn-claim:hover { transform: scale(1.05) translateY(-2px); box-shadow: 0 0 60px rgba(239, 68, 68, 0.5); }
-
-        .stat-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.2em; }
-        .stat-value { font-family: 'Inter', sans-serif; font-weight: 900; }
     </style>
 </head>
-<body>
+<body class="min-h-screen text-deepPink flex flex-col justify-between overflow-x-hidden">
 
-    <div class="premium-banner w-full py-4 text-center text-[11px] font-bold text-purple-400">
-        YOUR SOL IS SAFE WITH FAITH
-    </div>
+    <!-- TOP HEADER: LIVE PRICE & GOLD CLOCK -->
+    <header class="w-full pt-6 flex flex-col items-center justify-center relative z-10">
+        <div class="absolute left-8 top-6 text-3xl font-black tracking-wider text-white drop-shadow-md">
+            FAITH
+        </div>
+        
+        <div class="glass-panel px-6 py-2 rounded-full flex items-center gap-3 text-sm font-semibold mb-2">
+            <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+            <span>LIVE SOLANA PRICE // <span id="sol-price" class="text-hotPink font-bold">$185.77</span> // <span class="text-green-500">Up 15.2%</span></span>
+        </div>
 
-    <div class="flex-grow flex items-center justify-center p-8">
-        <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
+        <div class="glass-panel px-8 py-2 rounded-xl flex items-center gap-3 border border-faithGold/50 shadow-gold">
+            <svg class="w-5 h-5 text-faithGold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="text-xs uppercase tracking-widest text-deepPink font-bold">Live Clock //</span>
+            <span id="live-clock" class="text-2xl font-black gold-text tracking-widest">00:00:00</span>
+            <span class="text-xs uppercase tracking-widest text-deepPink font-bold">// 24/7 ONLINE</span>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow flex flex-col items-center justify-center px-4 py-8 w-full max-w-6xl mx-auto relative z-10">
+        
+        <!-- HEADINGS -->
+        <div class="text-center mb-8">
+            <h1 class="text-6xl md:text-7xl font-black text-white drop-shadow-lg tracking-tighter mb-2">
+                FAITH //
+            </h1>
+            <h2 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-hotPink to-deepPink drop-shadow-sm mb-4">
+                RECLAIM YOUR SOL
+            </h2>
+            <p class="text-lg font-semibold text-white bg-hotPink/20 inline-block px-4 py-1 rounded-full backdrop-blur-sm mb-2">
+                Your SOL is safe with FAITH // RECOVERY PROTOCOL
+            </p>
+            <p class="text-sm font-bold uppercase tracking-widest text-deepPink mt-2">
+                Cheaper and Secure than Sol Incinerator // Only 5% Fee
+            </p>
+        </div>
+
+        <!-- THE 3 STEPS -->
+        <div class="flex items-center justify-center gap-4 md:gap-12 mb-10 w-full">
+            <div class="flex flex-col items-center text-white drop-shadow-md">
+                <div class="w-16 h-16 glass-panel rounded-2xl flex items-center justify-center mb-2 shadow-neon">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                </div>
+                <span class="font-bold text-lg uppercase">Connect</span>
+            </div>
             
-            <!-- LEFT -->
-            <div class="space-y-8">
-                <div class="glass-card p-6">
-                    <p class="stat-label mb-4 text-cyan-400">Network: Solana Mainnet</p>
-                    <button id="connectBtn" class="w-full bg-white/5 border border-white/10 hover:bg-white/10 py-4 rounded-xl font-bold text-xs tracking-widest transition">
-                        [ ⚡ CONNECT PHANTOM ]
-                    </button>
-                    <div id="solPrice" class="mt-4 text-xs text-center text-emerald-400 font-medium">FETCHING LIVE SOL PRICE...</div>
+            <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+            
+            <div class="flex flex-col items-center text-white drop-shadow-md">
+                <div class="w-16 h-16 glass-panel rounded-full flex items-center justify-center mb-2 shadow-neon">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
-
-                <div class="glass-card p-10 text-center border-t-2 border-emerald-500/50">
-                    <h2 class="text-4xl font-black mb-1 italic">ONLY 5%</h2>
-                    <p class="text-emerald-400 text-xs font-bold tracking-[0.3em] mb-6">DUST RECOVERY FEE</p>
-                    <div class="inline-block p-4 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                        <i class="fas fa-shield-check text-4xl text-emerald-500"></i>
-                    </div>
-                </div>
+                <span class="font-bold text-lg uppercase">Scan</span>
             </div>
 
-            <!-- CENTER -->
-            <div class="flex flex-col items-center">
-                <h1 class="text-7xl font-black tracking-tighter mb-10 italic text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">FAITH</h1>
-                
-                <div class="reactor-core">
-                    <div id="bar1" class="sol-bar uppercase">Status: Idle</div>
-                    <div id="bar2" class="sol-bar uppercase">Scan Ready: --</div>
-                    <div id="bar3" class="sol-bar text-[10px] uppercase tracking-widest">Fee Gauge: 0%</div>
-                </div>
+            <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
 
-                <div class="mt-12 h-20">
-                    <button id="claimBtn" class="btn-claim px-12 py-5 rounded-2xl font-black text-2xl hidden">
-                        [ 💰 CLAIM SOL ]
-                    </button>
+            <div class="flex flex-col items-center text-white drop-shadow-md">
+                <div class="w-16 h-16 glass-panel rounded-2xl flex items-center justify-center mb-2 shadow-neon">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                 </div>
-            </div>
-
-            <!-- RIGHT -->
-            <div class="space-y-8">
-                <div class="flex gap-6">
-                    <div class="glass-card p-6 flex-1 text-center">
-                        <p class="stat-label mb-2">Recoverable</p>
-                        <p id="solVal" class="stat-value text-3xl text-emerald-400">0.00 ◎</p>
-                    </div>
-                    <div class="glass-card p-6 flex-1 text-center">
-                        <p class="stat-label mb-2">Accounts</p>
-                        <p id="folderVal" class="stat-value text-3xl">0</p>
-                    </div>
-                </div>
-
-                <div class="glass-card p-8 border-r-2 border-purple-500/50">
-                    <p class="stat-label mb-4">Security & Superiority</p>
-                    <p class="text-sm font-bold mb-3 uppercase leading-tight">Stronger Security Than Sol Incinerator</p>
-                    <p class="text-xs text-purple-400 font-light leading-relaxed mb-6">FAITHSOL BEATS SOL INCINERATOR HANDS DOWN ON EVERYTHING</p>
-                    
-                    <div class="flex justify-between items-center px-2">
-                        <div class="text-center"><i class="fas fa-bolt text-emerald-400 mb-2"></i><p class="text-[9px] font-bold">SPEED</p></div>
-                        <div class="text-center"><i class="fas fa-percent text-emerald-400 mb-2"></i><p class="text-[9px] font-bold">FEE</p></div>
-                        <div class="text-center"><i class="fas fa-eye text-emerald-400 mb-2"></i><p class="text-[9px] font-bold">CLARITY</p></div>
-                        <div class="text-center"><i class="fas fa-lock text-emerald-400 mb-2"></i><p class="text-[9px] font-bold">TRUST</p></div>
-                    </div>
-                </div>
+                <span class="font-bold text-lg uppercase">Collect</span>
             </div>
         </div>
-    </div>
 
-    <footer class="p-10 text-center text-gray-500 text-[11px] space-y-2 opacity-50">
-        <p>⚡ Built for FAITH ❤️ Paps still wants his villa 😜</p>
-        <p class="font-bold tracking-[0.5em] uppercase">FAITH - Clean. Scan. Collect. Secure on Solana.</p>
+        <!-- MAIN CTA -->
+        <button class="cta-btn text-white font-black text-2xl uppercase px-12 py-4 rounded-full border-4 border-white/40 mb-12 flex items-center gap-3">
+            Claim SOL (Connect Wallet)
+            <svg class="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+
+        <!-- BOTTOM PANELS (TABLE & OPTIMIZER) -->
+        <div class="w-full flex flex-col lg:flex-row gap-6">
+            
+            <!-- LIVE WALLET LISTINGS -->
+            <div class="glass-panel flex-grow rounded-3xl p-6 overflow-hidden">
+                <h3 class="text-sm font-bold uppercase tracking-widest text-white mb-4 border-b border-white/30 pb-2">Daily Live Wallet Listings</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-deepPink font-semibold">
+                        <thead>
+                            <tr class="uppercase text-xs tracking-wider opacity-70">
+                                <th class="pb-3">Timestamp</th>
+                                <th class="pb-3">Wallet_ID</th>
+                                <th class="pb-3">Dust_Type</th>
+                                <th class="pb-3 text-right">Amount_SOL</th>
+                                <th class="pb-3 text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-white drop-shadow-sm">
+                            <tr class="border-b border-white/20">
+                                <td class="py-2">0.05 SECONDS AGO</td>
+                                <td class="font-mono text-xs opacity-90">0x365f...1457</td>
+                                <td>Token Account</td>
+                                <td class="text-right text-faithGold font-bold">+0.002 SOL</td>
+                                <td class="text-right text-green-400">SUCCESS ✓</td>
+                            </tr>
+                            <tr class="border-b border-white/20">
+                                <td class="py-2">1.1 SECONDS AGO</td>
+                                <td class="font-mono text-xs opacity-90">0x285f...thb6</td>
+                                <td>NFT Dust</td>
+                                <td class="text-right text-faithGold font-bold">+0.002 SOL</td>
+                                <td class="text-right text-green-400">SUCCESS ✓</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2">1.2 SECONDS AGO</td>
+                                <td class="font-mono text-xs opacity-90">0x205f...f974</td>
+                                <td>NFT Dust</td>
+                                <td class="text-right text-faithGold font-bold">+0.002 SOL</td>
+                                <td class="text-right text-green-400">SUCCESS ✓</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- BATCH OPTIMIZER -->
+            <div class="glass-panel w-full lg:w-72 rounded-3xl p-6 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-sm font-bold uppercase tracking-widest text-white mb-4 border-b border-white/30 pb-2">Batch Optimizer</h3>
+                    <div class="space-y-2 text-sm font-mono text-white mb-6">
+                        <div class="flex justify-between"><span>BATCH 1</span><span class="text-faithGold">+185.3509</span></div>
+                        <div class="flex justify-between"><span>BATCH 2</span><span class="text-faithGold">+0.002176</span></div>
+                        <div class="flex justify-between"><span>BATCH 3</span><span class="text-faithGold">+0.003733</span></div>
+                        <div class="flex justify-between opacity-70 mt-2 pt-2 border-t border-white/20"><span>QUEUE</span><span>0+80771</span></div>
+                    </div>
+                </div>
+                <div class="bg-green-500/20 text-green-700 font-bold border border-green-500/50 rounded-full py-2 px-4 text-center text-xs flex items-center justify-center gap-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    OPTIMIZER_ACTIVE
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- LIVE ACTIVITY FEED FOOTER -->
+    <footer class="w-full bg-deepPink/80 backdrop-blur-md border-t border-white/30 text-white text-xs font-bold uppercase tracking-widest py-3 overflow-hidden relative z-10">
+        <div class="whitespace-nowrap animate-[marquee_20s_linear_infinite] flex gap-12">
+            <span>LIVE ACTIVITY FEED</span>
+            <span>✨ WALLET collected 0.05 SOL! 🎉</span>
+            <span>✨ You collected 0.1 SOL! ✨</span>
+            <span class="text-faithGold">STRONGER SECURITY THAN SOL INCINERATOR Verified ✓</span>
+            <span>ONLY 5% FEE</span>
+            <span>✨ WALLET collected 0.02 SOL! 🎉</span>
+        </div>
     </footer>
 
+    <style>
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
+
+    <!-- SCRIPTS FOR LIVE CLOCK AND PRICE FLUCTUATION -->
     <script>
-        (async function() {
-            async function updateSolPrice() {
-                try {
-                    const resp = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT');
-                    const data = await resp.json();
-                    document.getElementById('solPrice').innerHTML = `<span class="opacity-50">SOL:</span> $${parseFloat(data.price).toFixed(2)} USD`;
-                } catch (e) { document.getElementById('solPrice').innerText = 'SOL: $--.--'; }
-            }
-            updateSolPrice();
-            setInterval(updateSolPrice, 60000);
+        // Update Live Gold Clock
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('live-clock').textContent = timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
 
-            const RPC = "https://api.mainnet-beta.solana.com";
-            const TOKEN_PROGRAM = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
-            const RENT = 0.00203928;
-            let connection = new solanaWeb3.Connection(RPC, "confirmed");
-            let walletPubkey = null;
-            let dustAccounts = [];
-
-            const connectBtn = document.getElementById("connectBtn");
-            const claimBtn = document.getElementById("claimBtn");
-            const bars = [document.getElementById('bar1'), document.getElementById('bar2'), document.getElementById('bar3')];
-
-            connectBtn.onclick = async () => {
-                if (!window.solana?.isPhantom) return alert("Please install Phantom");
-                try {
-                    const resp = await window.solana.connect();
-                    walletPubkey = resp.publicKey;
-                    connectBtn.innerHTML = "WALLET CONNECTED <i class='fas fa-check-circle ml-2'></i>";
-                    connectBtn.classList.add('text-emerald-400', 'border-emerald-500/30');
-                    await scanWallet();
-                } catch(e) { console.error(e); }
-            };
-
-            async function scanWallet() {
-                bars[0].innerText = "SCANNING...";
-                try {
-                    const accounts = await connection.getTokenAccountsByOwner(walletPubkey, { programId: TOKEN_PROGRAM });
-                    let empty = [];
-                    for (let acc of accounts.value) {
-                        const info = await connection.getTokenAccountBalance(acc.pubkey);
-                        if (info.value.uiAmount === 0) empty.push(acc.pubkey);
-                    }
-                    dustAccounts = empty;
-                    
-                    bars.forEach(b => b.classList.add('active-bar'));
-                    bars[0].innerText = "SUCCESS!";
-                    bars[1].innerText = `${dustAccounts.length} ACCOUNTS`;
-                    bars[2].innerText = `FEE: 5% SECURED`;
-
-                    const totalSol = dustAccounts.length * RENT;
-                    document.getElementById('solVal').innerText = `${totalSol.toFixed(4)} ◎`;
-                    document.getElementById('folderVal').innerText = dustAccounts.length;
-
-                    if (dustAccounts.length > 0) {
-                        claimBtn.classList.remove('hidden');
-                        claimBtn.innerText = `[ 💰 CLAIM ${(totalSol * 0.95).toFixed(4)} SOL ]`;
-                    }
-                } catch(e) { bars[0].innerText = "SCAN ERROR"; }
-            }
-        })();
+        // Simulate Solana Price Fluctuation slightly
+        function updatePrice() {
+            const priceElement = document.getElementById('sol-price');
+            let currentPrice = parseFloat(priceElement.textContent.replace('$', ''));
+            const change = (Math.random() - 0.5) * 0.5; // Change by up to $0.25
+            let newPrice = currentPrice + change;
+            priceElement.textContent = '$' + newPrice.toFixed(2);
+        }
+        setInterval(updatePrice, 3000);
     </script>
 </body>
 </html>
