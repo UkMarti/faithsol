@@ -19,7 +19,6 @@
             background-clip: text;
             color: transparent;
         }
-        /* Solana 3-line dust meter */
         .dust-meter {
             display: flex;
             flex-direction: column;
@@ -35,9 +34,6 @@
         .meter-line.fill-1 { background-color: #9945FF; width: 100%; }
         .meter-line.fill-2 { background-color: #FF6B9D; width: 100%; }
         .meter-line.fill-3 { background-color: #14F195; width: 100%; }
-        /* line widths for partial filling (optional) */
-        .meter-line.partial { width: 50%; }
-        
         .tooltip-balloon {
             position: relative;
             cursor: help;
@@ -98,7 +94,7 @@
             </div>
         </div>
 
-        <!-- Scanner card with Solana lines -->
+        <!-- Scanner card -->
         <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 card-hover mb-10">
             <h2 class="text-xl font-bold mb-2"><i class="fas fa-meteor text-purple-400"></i> Check any wallet</h2>
             <div class="flex flex-col sm:flex-row gap-3 mt-3">
@@ -110,13 +106,22 @@
         </div>
 
         <!-- Leaderboard -->
-        <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5">
+        <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 mb-8">
             <h2 class="text-xl font-bold mb-3"><i class="fas fa-chart-simple text-teal-400"></i> 🐋 Top 10 Dusty Whales (yesterday)</h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="border-b border-white/10"><tr><th>#</th><th>Wallet</th><th>Dust accounts</th><th>Recoverable SOL</th></tr></thead>
                     <tbody id="leaderboardBody"><tr><td colspan="4" class="text-center py-4">Loading...</td></tr></tbody>
-                </table>
+                \]
+
+            </div>
+        </div>
+
+        <!-- LIVE SCAN FEED (new) -->
+        <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5">
+            <h2 class="text-xl font-bold mb-3 flex items-center gap-2"><i class="fas fa-sync-alt text-purple-400"></i> 🕒 LIVE SCAN FEED</h2>
+            <div id="liveScansFeed" class="text-sm font-mono">
+                <div class="text-center text-gray-400 py-4">Waiting for first scan...</div>
             </div>
         </div>
 
@@ -126,24 +131,11 @@
     </div>
 
     <script>
-        // Paste the same functional code from previous version (leaderboard, scanning, RPC fallback)
-        // Keep it exactly as before, but we'll add the dust meter visual in the results.
-        // For brevity, I'm including the full working script from my last message, 
-        // and enhancing the result display to use the 3-line meter.
-        
-        // (Full scanner + leaderboard logic from previous answer…)
-        // I will embed the same working script but add the dust meter inside .scanResult.
-        // To save space, I'll assume the previous script is inserted here.
-        // But for clarity, I'm writing a compact version that includes the dust meter.
-
-        // [PASTE THE EXACT WORKING SCRIPT FROM MY PREVIOUS MESSAGE HERE]
-        // It already works. I will only modify the part that shows dust result to include the 3-line meter.
-
-        // --- BEGIN SCRIPT (same as before, with one addition) ---
+        // RPC and helper functions
         const RPC_ENDPOINTS = ["https://api.mainnet-beta.solana.com","https://solana-rpc.publicnode.com","https://rpc.ankr.com/solana"];
         const TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
         const RENT = 0.00203928;
-        async function rpc(method, params) { /* same as previous */ 
+        async function rpc(method, params) {
             for(let url of RPC_ENDPOINTS) {
                 try {
                     let res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:"2.0",id:1,method,params})});
@@ -192,7 +184,6 @@
                 let {dustCount, estimatedSol, totalAccounts} = await getDust(addr);
                 let fee = estimatedSol * 0.05;
                 let userGets = estimatedSol - fee;
-                // Dust meter: 3 horizontal lines
                 let fillLevel = 0;
                 if (estimatedSol > 0.1) fillLevel = 3;
                 else if (estimatedSol > 0.01) fillLevel = 2;
@@ -229,6 +220,33 @@
             }
         };
         loadLeaderboard();
+
+        // Live scan feed fetcher
+        async function fetchLiveScans() {
+            try {
+                const url = 'https://raw.githubusercontent.com/UkMarti/faithsol/main/scans/latest.json?t=' + Date.now();
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Not found');
+                const data = await response.json();
+                const container = document.getElementById('liveScansFeed');
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<div class="text-center text-gray-400 py-4">No scans yet – scanner will run soon.</div>';
+                    return;
+                }
+                const last20 = data.slice(-20).reverse();
+                let html = '<div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead><tr class="border-b border-white/20"><th>Wallet</th><th>Dust accounts</th><th>Recoverable SOL</th><th>Time (UTC)</th></tr></thead><tbody>';
+                for (let s of last20) {
+                    let shortAddr = s.Wallet.slice(0,6) + '...' + s.Wallet.slice(-4);
+                    html += `<tr class="border-b border-white/10"><td class="py-2 font-mono">${shortAddr}</td><td>${s.DustAccounts}</td><td class="text-green-300">${s.RecoverableSOL.toFixed(6)} ◎</td><td>${s.Timestamp.slice(5,16)}</td></tr>`;
+                }
+                html += '</tbody></table></div><div class="text-right text-xs text-gray-400 mt-2">Last update: ' + new Date().toLocaleTimeString() + '</div>';
+                container.innerHTML = html;
+            } catch (e) {
+                document.getElementById('liveScansFeed').innerHTML = '<div class="text-center text-gray-400 py-4">Awaiting first scan...</div>';
+            }
+        }
+        fetchLiveScans();
+        setInterval(fetchLiveScans, 15000);
     </script>
 </body>
 </html>
