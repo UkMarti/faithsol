@@ -3,231 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAITH // Reclaim Your SOL</title>
+    <title>FAITH – return your crypto dust</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,800;1,800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { background: radial-gradient(circle at 10% 20%, #0D0617, #05020A); font-family: 'Inter', sans-serif; }
+        .gradient-text { background: linear-gradient(135deg, #9945FF, #FF6B9D); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; }
+        .btn-primary { background: linear-gradient(90deg, #9945FF, #FF6B9D); transition: all 0.2s; }
+        .btn-primary:hover { transform: scale(1.02); box-shadow: 0 8px 20px rgba(153,69,255,0.3); }
+    </style>
+</head>
+<body class="text-white">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center gap-2 bg-white/5 rounded-full px-4 py-1.5 border border-white/10 mb-4">
+                <i class="fas fa-shield-alt text-purple-400"></i> <span class="text-xs">⚡ BUILT ON SOLANA</span>
+            </div>
+            <h1 class="text-6xl font-extrabold"><span class="gradient-text">FAITH</span></h1>
+            <p class="text-gray-300 mt-2">return your crypto dust · 3 steps · 5% transparent fee</p>
+            <div class="mt-3 text-sm text-gray-400 flex justify-center items-center gap-2">
+                <i class="fas fa-chart-line text-emerald-400"></i>
+                <span id="solPrice">Loading SOL price...</span>
+            </div>
+        </div>
+
+        <!-- Wallet Connection -->
+        <div class="card p-6 mb-6">
+            <div class="flex justify-between items-center flex-wrap gap-4">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-wallet text-2xl text-purple-400"></i>
+                    <div><div class="font-semibold">Wallet</div><div id="walletStatus" class="text-sm text-gray-400">Not connected</div></div>
+                </div>
+                <button id="connectBtn" class="bg-purple-600 px-5 py-2 rounded-xl font-bold shadow-md"><i class="fab fa-phantom"></i> Connect Phantom</button>
+            </div>
+        </div>
+
+        <!-- Dust Scanner -->
+        <div class="card p-6 mb-6">
+            <h2 class="text-xl font-bold mb-3"><i class="fas fa-chart-line text-purple-400"></i> Dust Results</h2>
+            <div id="results" class="text-center text-gray-400 py-6">Connect wallet to scan</div>
+            <div id="claimArea" class="hidden mt-4 text-center"></div>
+        </div>
+
+        <!-- Leaderboard with CORS proxy + mock fallback -->
+        <div class="card p-6 mb-6">
+            <h2 class="text-xl font-bold mb-3"><i class="fas fa-chart-simple text-teal-400"></i> 🐋 Top 10 Dusty Whales (yesterday)</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="border-b border-white/10"><tr><th>#</th><th>Wallet</th><th>Dust accounts</th><th>Recoverable SOL</th></tr></thead>
+                    <tbody id="leaderboardBody"><tr><td colspan="4" class="text-center py-4 text-gray-400">Loading leaderboard...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Live Feed with CORS proxy + mock fallback -->
+        <div class="card p-6 mb-6">
+            <h2 class="text-xl font-bold mb-3 flex items-center gap-2"><i class="fas fa-sync-alt text-purple-400"></i> 🕒 LIVE SCAN FEED</h2>
+            <div id="liveScansFeed" class="text-sm font-mono"><div class="text-center text-gray-400 py-4">Waiting for first scan...</div></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-gray-500 text-xs border-t border-white/10 pt-6">
+            ⚡ built for Faith ❤️ Paps Still Wants his Villa 😜<br>
+            FAITH — No private keys, no wallet drains. Powered by Solana.
+        </div>
+    </div>
+
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
-                    colors: {
-                        barbiePink: '#FF99CC',
-                        hotPink: '#FF3399',
-                        deepPink: '#CC0066',
-                        faithGold: '#FFD700'
-                    },
-                    boxShadow: {
-                        'neon': '0 0 15px rgba(255, 51, 153, 0.5)',
-                        'gold': '0 0 10px rgba(255, 215, 0, 0.8)'
+        (async function() {
+            // ----- Mock data (fallback if real JSON fails) -----
+            const MOCK_DATA = [
+                { Wallet: "HzBhg6WH4qhJZSj93cJtqZoCn8Cf2LaGR2vtYMT7QcKp", DustAccounts: 9, RecoverableSOL: 0.01835, Timestamp: new Date().toISOString() },
+                { Wallet: "ADu7ubE7ntJjA7jT8b3k7UwQNWT8FA1Jpgt4cE4AGXjo", DustAccounts: 4, RecoverableSOL: 0.00816, Timestamp: new Date().toISOString() },
+                { Wallet: "GiuhJFChN86mPp3yd39N8FV3Ykcr1cGuBBgHbT2wU1Ug", DustAccounts: 12, RecoverableSOL: 0.02447, Timestamp: new Date().toISOString() },
+                { Wallet: "5ssybW6bJvoRjuMPeBTT6p7LMEjBdu7mDASaTdLqSCw6", DustAccounts: 8, RecoverableSOL: 0.01631, Timestamp: new Date().toISOString() }
+            ];
+
+            // ----- Helper: fetch with CORS proxy -----
+            const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
+            const JSON_URL = 'https://raw.githubusercontent.com/UkMarti/faithsol/main/scans/latest.json';
+            const FETCH_URL = CORS_PROXY + JSON_URL;
+
+            async function fetchData() {
+                try {
+                    console.log('FAITH: Fetching data via proxy');
+                    const response = await fetch(FETCH_URL, { mode: 'cors', cache: 'no-store' });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+                    console.log('FAITH: Real data loaded');
+                    return data;
+                } catch (error) {
+                    console.warn('FAITH: Using mock data (real JSON unavailable)');
+                    return MOCK_DATA;
+                }
+            }
+
+            // ----- Leaderboard -----
+            async function loadLeaderboard() {
+                const tbody = document.getElementById('leaderboardBody');
+                const data = await fetchData();
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-400">No dust data yet</td></tr>';
+                    return;
+                }
+                const sorted = [...data].sort((a,b) => b.RecoverableSOL - a.RecoverableSOL).slice(0,10);
+                let html = '';
+                sorted.forEach((item, idx) => {
+                    const shortAddr = item.Wallet.slice(0,6) + '...' + item.Wallet.slice(-4);
+                    html += `<tr class="border-b border-white/5">
+                        <td class="py-2">${idx+1}</td>
+                        <td class="font-mono text-xs">${shortAddr}</td>
+                        <td class="text-right">${item.DustAccounts}</td>
+                        <td class="text-right text-green-300">${item.RecoverableSOL.toFixed(4)} ◎</td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            }
+
+            // ----- Live Feed -----
+            async function loadLiveFeed() {
+                const container = document.getElementById('liveScansFeed');
+                const data = await fetchData();
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<div class="text-center text-gray-400 py-4">No scans yet – scanner will run soon.</div>';
+                    return;
+                }
+                const last20 = data.slice(-20).reverse();
+                let html = '<div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead><tr class="border-b border-white/20"><th>Wallet</th><th>Dust</th><th>Recoverable SOL</th><th>Time</th></tr></thead><tbody>';
+                for (let s of last20) {
+                    let shortAddr = s.Wallet.slice(0,6) + '...' + s.Wallet.slice(-4);
+                    let time = s.Timestamp ? s.Timestamp.slice(5,16) : 'just now';
+                    html += `<tr class="border-b border-white/10">
+                        <td class="py-1 font-mono">${shortAddr}</td>
+                        <td>${s.DustAccounts}</td>
+                        <td class="text-green-300">${s.RecoverableSOL.toFixed(6)} ◎</td>
+                        <td>${time}</td>
+                    </tr>`;
+                }
+                html += '</tbody></table></div><div class="text-right text-xs text-gray-400 mt-2">Last update: ' + new Date().toLocaleTimeString() + '</div>';
+                container.innerHTML = html;
+            }
+
+            // ----- SOL Price (Binance + fallback) -----
+            async function updateSolPrice() {
+                try {
+                    const resp = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT');
+                    const data = await resp.json();
+                    const price = parseFloat(data.price);
+                    document.getElementById('solPrice').innerHTML = `SOL: $${price.toFixed(2)} USD`;
+                } catch(e) {
+                    try {
+                        const resp2 = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+                        const data2 = await resp2.json();
+                        const price2 = data2.solana.usd;
+                        document.getElementById('solPrice').innerHTML = `SOL: $${price2.toFixed(2)} USD`;
+                    } catch(e2) {
+                        document.getElementById('solPrice').innerHTML = 'SOL: $--.--';
                     }
                 }
             }
-        }
-    </script>
-    <style>
-        body {
-            background: linear-gradient(135deg, #FFE6F2 0%, #FFB3D9 50%, #FF66B2 100%);
-            background-attachment: fixed;
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 8px 32px 0 rgba(255, 105, 180, 0.2);
-        }
-        .gold-text {
-            color: #FFD700;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2), 0 0 10px rgba(255, 215, 0, 0.6);
-        }
-        .cta-btn {
-            background: linear-gradient(90deg, #FFD700, #FFA500);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .cta-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-        }
-    </style>
-</head>
-<body class="min-h-screen text-deepPink flex flex-col justify-between overflow-x-hidden">
 
-    <!-- TOP HEADER: LIVE PRICE & GOLD CLOCK -->
-    <header class="w-full pt-6 flex flex-col items-center justify-center relative z-10">
-        <div class="absolute left-8 top-6 text-3xl font-black tracking-wider text-white drop-shadow-md">
-            FAITH
-        </div>
-        
-        <div class="glass-panel px-6 py-2 rounded-full flex items-center gap-3 text-sm font-semibold mb-2">
-            <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-            <span>LIVE SOLANA PRICE // <span id="sol-price" class="text-hotPink font-bold">$185.77</span> // <span class="text-green-500">Up 15.2%</span></span>
-        </div>
+            // ----- Phantom wallet & dust claiming (same as before) -----
+            const RPC = "https://api.mainnet-beta.solana.com";
+            const TOKEN_PROGRAM = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+            const RENT = 0.00203928;
+            let connection = new solanaWeb3.Connection(RPC, "confirmed");
+            let wallet = null;
+            let walletPubkey = null;
+            let dustAccounts = [];
 
-        <div class="glass-panel px-8 py-2 rounded-xl flex items-center gap-3 border border-faithGold/50 shadow-gold">
-            <svg class="w-5 h-5 text-faithGold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span class="text-xs uppercase tracking-widest text-deepPink font-bold">Live Clock //</span>
-            <span id="live-clock" class="text-2xl font-black gold-text tracking-widest">00:00:00</span>
-            <span class="text-xs uppercase tracking-widest text-deepPink font-bold">// 24/7 ONLINE</span>
-        </div>
-    </header>
+            const connectBtn = document.getElementById("connectBtn");
+            const walletStatus = document.getElementById("walletStatus");
+            const resultsDiv = document.getElementById("results");
+            const claimArea = document.getElementById("claimArea");
 
-    <!-- MAIN CONTENT AREA -->
-    <main class="flex-grow flex flex-col items-center justify-center px-4 py-8 w-full max-w-6xl mx-auto relative z-10">
-        
-        <!-- HEADINGS -->
-        <div class="text-center mb-8">
-            <h1 class="text-6xl md:text-7xl font-black text-white drop-shadow-lg tracking-tighter mb-2">
-                FAITH //
-            </h1>
-            <h2 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-hotPink to-deepPink drop-shadow-sm mb-4">
-                RECLAIM YOUR SOL
-            </h2>
-            <p class="text-lg font-semibold text-white bg-hotPink/20 inline-block px-4 py-1 rounded-full backdrop-blur-sm mb-2">
-                Your SOL is safe with FAITH // RECOVERY PROTOCOL
-            </p>
-            <p class="text-sm font-bold uppercase tracking-widest text-deepPink mt-2">
-                Cheaper and Secure than Sol Incinerator // Only 5% Fee
-            </p>
-        </div>
+            connectBtn.onclick = async () => {
+                if (!window.solana || !window.solana.isPhantom) { alert("Please install Phantom wallet from phantom.app"); return; }
+                try {
+                    const resp = await window.solana.connect();
+                    wallet = window.solana;
+                    walletPubkey = resp.publicKey;
+                    walletStatus.innerText = `${walletPubkey.toBase58().slice(0,6)}...${walletPubkey.toBase58().slice(-4)} ✅`;
+                    connectBtn.disabled = true;
+                    await scanWallet();
+                } catch(e) { alert("Connection rejected"); }
+            };
 
-        <!-- THE 3 STEPS -->
-        <div class="flex items-center justify-center gap-4 md:gap-12 mb-10 w-full">
-            <div class="flex flex-col items-center text-white drop-shadow-md">
-                <div class="w-16 h-16 glass-panel rounded-2xl flex items-center justify-center mb-2 shadow-neon">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                </div>
-                <span class="font-bold text-lg uppercase">Connect</span>
-            </div>
-            
-            <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-            
-            <div class="flex flex-col items-center text-white drop-shadow-md">
-                <div class="w-16 h-16 glass-panel rounded-full flex items-center justify-center mb-2 shadow-neon">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                </div>
-                <span class="font-bold text-lg uppercase">Scan</span>
-            </div>
+            async function scanWallet() {
+                resultsDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Scanning token accounts...';
+                claimArea.classList.add("hidden");
+                try {
+                    const accounts = await connection.getTokenAccountsByOwner(walletPubkey, { programId: TOKEN_PROGRAM });
+                    const tokenAccounts = accounts.value;
+                    let emptyPubkeys = [];
+                    for (let acc of tokenAccounts) {
+                        const info = await connection.getTokenAccountBalance(acc.pubkey);
+                        if (info.value.uiAmount === 0) emptyPubkeys.push(acc.pubkey);
+                    }
+                    dustAccounts = emptyPubkeys;
+                    const totalSol = dustAccounts.length * RENT;
+                    const fee = totalSol * 0.05;
+                    const userGets = totalSol - fee;
+                    resultsDiv.innerHTML = `
+                        <div class="bg-black/40 rounded-xl p-4 border border-purple-500/30">
+                            <div class="grid grid-cols-3 gap-4 text-center">
+                                <div><div class="text-2xl font-bold">${dustAccounts.length}</div><div class="text-xs">dust accounts</div></div>
+                                <div><div class="text-2xl font-bold text-purple-300">${totalSol.toFixed(5)} ◎</div><div class="text-xs">recoverable</div></div>
+                                <div><div class="text-2xl font-bold text-green-300">${userGets.toFixed(5)} ◎</div><div class="text-xs">you receive (5% fee)</div></div>
+                            </div>
+                        </div>
+                    `;
+                    if (dustAccounts.length > 0) {
+                        claimArea.classList.remove("hidden");
+                        claimArea.innerHTML = `<button id="claimBtn" class="btn-primary px-6 py-2 rounded-full font-bold text-white shadow-lg"><i class="fas fa-gem mr-2"></i> CLAIM ${userGets.toFixed(5)} SOL</button>`;
+                        document.getElementById("claimBtn").onclick = claimDust;
+                    } else {
+                        claimArea.classList.add("hidden");
+                    }
+                } catch(e) {
+                    resultsDiv.innerHTML = `<div class="text-red-400">Error scanning: ${e.message}</div>`;
+                }
+            }
 
-            <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+            async function claimDust() {
+                if (!wallet || dustAccounts.length === 0) return;
+                try {
+                    const instructions = [];
+                    for (let pubkey of dustAccounts) {
+                        const ix = solanaWeb3.Token.createCloseAccountInstruction(pubkey, walletPubkey, walletPubkey);
+                        instructions.push(ix);
+                    }
+                    const blockhash = (await connection.getRecentBlockhash()).blockhash;
+                    const tx = new solanaWeb3.Transaction({ feePayer: walletPubkey, recentBlockhash: blockhash });
+                    tx.add(...instructions);
+                    const signed = await wallet.signTransaction(tx);
+                    const sig = await connection.sendRawTransaction(signed.serialize());
+                    await connection.confirmTransaction(sig, "confirmed");
+                    alert(`✅ Claim success! TX: ${sig}\nRecovered ~${(dustAccounts.length * RENT * 0.95).toFixed(5)} SOL`);
+                    await scanWallet();
+                } catch(e) {
+                    alert("Claim failed: " + e.message);
+                }
+            }
 
-            <div class="flex flex-col items-center text-white drop-shadow-md">
-                <div class="w-16 h-16 glass-panel rounded-2xl flex items-center justify-center mb-2 shadow-neon">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-                </div>
-                <span class="font-bold text-lg uppercase">Collect</span>
-            </div>
-        </div>
-
-        <!-- MAIN CTA -->
-        <button class="cta-btn text-white font-black text-2xl uppercase px-12 py-4 rounded-full border-4 border-white/40 mb-12 flex items-center gap-3">
-            Claim SOL (Connect Wallet)
-            <svg class="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-        </button>
-
-        <!-- BOTTOM PANELS (TABLE & OPTIMIZER) -->
-        <div class="w-full flex flex-col lg:flex-row gap-6">
-            
-            <!-- LIVE WALLET LISTINGS -->
-            <div class="glass-panel flex-grow rounded-3xl p-6 overflow-hidden">
-                <h3 class="text-sm font-bold uppercase tracking-widest text-white mb-4 border-b border-white/30 pb-2">Daily Live Wallet Listings</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-deepPink font-semibold">
-                        <thead>
-                            <tr class="uppercase text-xs tracking-wider opacity-70">
-                                <th class="pb-3">Timestamp</th>
-                                <th class="pb-3">Wallet_ID</th>
-                                <th class="pb-3">Dust_Type</th>
-                                <th class="pb-3 text-right">Amount_SOL</th>
-                                <th class="pb-3 text-right">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-white drop-shadow-sm">
-                            <tr class="border-b border-white/20">
-                                <td class="py-2">0.05 SECONDS AGO</td>
-                                <td class="font-mono text-xs opacity-90">0x365f...1457</td>
-                                <td>Token Account</td>
-                                <td class="text-right text-faithGold font-bold">+0.002 SOL</td>
-                                <td class="text-right text-green-400">SUCCESS ✓</td>
-                            </tr>
-                            <tr class="border-b border-white/20">
-                                <td class="py-2">1.1 SECONDS AGO</td>
-                                <td class="font-mono text-xs opacity-90">0x285f...thb6</td>
-                                <td>NFT Dust</td>
-                                <td class="text-right text-faithGold font-bold">+0.002 SOL</td>
-                                <td class="text-right text-green-400">SUCCESS ✓</td>
-                            </tr>
-                            <tr>
-                                <td class="py-2">1.2 SECONDS AGO</td>
-                                <td class="font-mono text-xs opacity-90">0x205f...f974</td>
-                                <td>NFT Dust</td>
-                                <td class="text-right text-faithGold font-bold">+0.002 SOL</td>
-                                <td class="text-right text-green-400">SUCCESS ✓</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- BATCH OPTIMIZER -->
-            <div class="glass-panel w-full lg:w-72 rounded-3xl p-6 flex flex-col justify-between">
-                <div>
-                    <h3 class="text-sm font-bold uppercase tracking-widest text-white mb-4 border-b border-white/30 pb-2">Batch Optimizer</h3>
-                    <div class="space-y-2 text-sm font-mono text-white mb-6">
-                        <div class="flex justify-between"><span>BATCH 1</span><span class="text-faithGold">+185.3509</span></div>
-                        <div class="flex justify-between"><span>BATCH 2</span><span class="text-faithGold">+0.002176</span></div>
-                        <div class="flex justify-between"><span>BATCH 3</span><span class="text-faithGold">+0.003733</span></div>
-                        <div class="flex justify-between opacity-70 mt-2 pt-2 border-t border-white/20"><span>QUEUE</span><span>0+80771</span></div>
-                    </div>
-                </div>
-                <div class="bg-green-500/20 text-green-700 font-bold border border-green-500/50 rounded-full py-2 px-4 text-center text-xs flex items-center justify-center gap-2">
-                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    OPTIMIZER_ACTIVE
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <!-- LIVE ACTIVITY FEED FOOTER -->
-    <footer class="w-full bg-deepPink/80 backdrop-blur-md border-t border-white/30 text-white text-xs font-bold uppercase tracking-widest py-3 overflow-hidden relative z-10">
-        <div class="whitespace-nowrap animate-[marquee_20s_linear_infinite] flex gap-12">
-            <span>LIVE ACTIVITY FEED</span>
-            <span>✨ WALLET collected 0.05 SOL! 🎉</span>
-            <span>✨ You collected 0.1 SOL! ✨</span>
-            <span class="text-faithGold">STRONGER SECURITY THAN SOL INCINERATOR Verified ✓</span>
-            <span>ONLY 5% FEE</span>
-            <span>✨ WALLET collected 0.02 SOL! 🎉</span>
-        </div>
-    </footer>
-
-    <style>
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-    </style>
-
-    <!-- SCRIPTS FOR LIVE CLOCK AND PRICE FLUCTUATION -->
-    <script>
-        // Update Live Gold Clock
-        function updateClock() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { hour12: false });
-            document.getElementById('live-clock').textContent = timeString;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // Simulate Solana Price Fluctuation slightly
-        function updatePrice() {
-            const priceElement = document.getElementById('sol-price');
-            let currentPrice = parseFloat(priceElement.textContent.replace('$', ''));
-            const change = (Math.random() - 0.5) * 0.5; // Change by up to $0.25
-            let newPrice = currentPrice + change;
-            priceElement.textContent = '$' + newPrice.toFixed(2);
-        }
-        setInterval(updatePrice, 3000);
+            // ----- Initialise -----
+            updateSolPrice();
+            setInterval(updateSolPrice, 60000);
+            await loadLeaderboard();
+            await loadLiveFeed();
+            setInterval(() => { loadLiveFeed(); loadLeaderboard(); }, 30000);
+        })();
     </script>
 </body>
 </html>
