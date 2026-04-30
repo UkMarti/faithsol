@@ -8,122 +8,58 @@
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body {
-            background: radial-gradient(circle at 10% 20%, #0D0617, #05020A);
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        }
-        .gradient-text {
-            background: linear-gradient(135deg, #14F195, #9945FF);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .card {
-            background: rgba(20, 20, 40, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(20, 241, 149, 0.2);
-            border-radius: 28px;
-            transition: all 0.2s ease;
-        }
-        .card:hover {
-            border-color: rgba(20, 241, 149, 0.5);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-        .btn-primary {
-            background: linear-gradient(90deg, #9945FF, #14F195);
-            transition: all 0.2s;
-        }
-        .btn-primary:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(20, 241, 149, 0.4);
-        }
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #14F195, #9945FF);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
+        body { background: radial-gradient(circle at 10% 20%, #0D0617, #05020A); font-family: 'Inter', sans-serif; }
+        .gradient-text { background: linear-gradient(135deg, #14F195, #9945FF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .card { background: rgba(20,20,40,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(20,241,149,0.2); border-radius: 28px; }
+        .card:hover { border-color: rgba(20,241,149,0.5); }
+        .btn-primary { background: linear-gradient(90deg, #9945FF, #14F195); }
+        .btn-primary:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(20,241,149,0.4); }
     </style>
 </head>
 <body class="text-white">
     <div class="max-w-5xl mx-auto px-4 py-8">
-        <!-- Header -->
         <div class="text-center mb-10">
             <div class="inline-flex items-center gap-2 bg-white/5 rounded-full px-4 py-1.5 border border-white/10 mb-4">
                 <i class="fas fa-shield-alt text-teal-400"></i>
-                <span class="text-xs font-medium tracking-wide">⚡ BUILT ON SOLANA</span>
+                <span class="text-xs font-medium">⚡ BUILT ON SOLANA</span>
             </div>
-            <h1 class="text-7xl font-extrabold tracking-tight">
-                <span class="gradient-text">FAITH</span>
-            </h1>
+            <h1 class="text-7xl font-extrabold"><span class="gradient-text">FAITH</span></h1>
             <p class="text-gray-300 text-lg mt-2">return your crypto dust · 3 steps · 5% transparent fee</p>
-            <!-- Live SOL price -->
             <div class="mt-4 inline-flex items-center gap-2 bg-black/30 rounded-full px-4 py-1.5">
                 <i class="fas fa-chart-line text-teal-400"></i>
-                <span id="solPrice" class="text-sm font-mono">Loading SOL price...</span>
+                <span id="solPrice" class="text-sm font-mono">Loading...</span>
             </div>
         </div>
 
-        <!-- Step cards (clock-like layout) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="card p-6 text-center">
-                <div class="text-4xl mb-2">1️⃣</div>
-                <div class="text-xl font-bold flex items-center justify-center gap-2"><i class="fas fa-plug text-teal-400"></i> CONNECT</div>
-                <p class="text-gray-400 text-sm mt-1">Your Phantom wallet</p>
-            </div>
-            <div class="card p-6 text-center">
-                <div class="text-4xl mb-2">2️⃣</div>
-                <div class="text-xl font-bold flex items-center justify-center gap-2"><i class="fas fa-search text-teal-400"></i> SCAN</div>
-                <p class="text-gray-400 text-sm mt-1">We find every dusty account</p>
-            </div>
-            <div class="card p-6 text-center">
-                <div class="text-4xl mb-2">3️⃣</div>
-                <div class="text-xl font-bold flex items-center justify-center gap-2"><i class="fas fa-gem text-teal-400"></i> CLAIM</div>
-                <p class="text-gray-400 text-sm mt-1">SOL lands in 10 seconds</p>
-            </div>
+            <div class="card p-6 text-center"><div class="text-4xl mb-2">1️⃣</div><div class="text-xl font-bold"><i class="fas fa-plug text-teal-400"></i> CONNECT</div><p class="text-gray-400 text-sm">Your Phantom wallet</p></div>
+            <div class="card p-6 text-center"><div class="text-4xl mb-2">2️⃣</div><div class="text-xl font-bold"><i class="fas fa-search text-teal-400"></i> SCAN</div><p class="text-gray-400 text-sm">We find every dusty account</p></div>
+            <div class="card p-6 text-center"><div class="text-4xl mb-2">3️⃣</div><div class="text-xl font-bold"><i class="fas fa-gem text-teal-400"></i> CLAIM</div><p class="text-gray-400 text-sm">SOL lands in 10 seconds</p></div>
         </div>
 
-        <!-- Wallet Connection Card -->
         <div class="card p-6 mb-8">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div class="flex items-center gap-3">
-                    <i class="fas fa-wallet text-2xl text-teal-400"></i>
-                    <div>
-                        <div class="font-semibold">Wallet</div>
-                        <div id="walletStatus" class="text-sm text-gray-400">Not connected</div>
-                    </div>
-                </div>
-                <button id="connectBtn" class="bg-purple-600 hover:bg-purple-500 px-6 py-2 rounded-full font-bold shadow-md transition"><i class="fab fa-phantom mr-2"></i> Connect Phantom</button>
+                <div class="flex items-center gap-3"><i class="fas fa-wallet text-2xl text-teal-400"></i><div><div class="font-semibold">Wallet</div><div id="walletStatus" class="text-sm text-gray-400">Not connected</div></div></div>
+                <button id="connectBtn" class="bg-purple-600 hover:bg-purple-500 px-6 py-2 rounded-full font-bold shadow-md"><i class="fab fa-phantom mr-2"></i> Connect Phantom</button>
             </div>
         </div>
 
-        <!-- Dust Results Card -->
         <div class="card p-6 mb-8">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-chart-line text-teal-400"></i> Dust Results</h2>
+            <h2 class="text-xl font-bold mb-4"><i class="fas fa-chart-line text-teal-400"></i> Dust Results</h2>
             <div id="results" class="text-center text-gray-400 py-6">Connect wallet to scan</div>
             <div id="claimArea" class="hidden mt-4 text-center"></div>
         </div>
 
-        <!-- Leaderboard Card -->
         <div class="card p-6 mb-8">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-chart-simple text-teal-400"></i> 🐋 Top 10 Dusty Whales</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="border-b border-white/10"><tr><th class="text-left py-2">#</th><th class="text-left">Wallet</th><th class="text-right">Dust accounts</th><th class="text-right">Recoverable SOL</th></tr></thead>
-                    <tbody id="leaderboardBody"><tr><td colspan="4" class="text-center py-4 text-gray-400">Loading leaderboard...</td></tr></tbody>
-                </table>
-            </div>
+            <h2 class="text-xl font-bold mb-4"><i class="fas fa-chart-simple text-teal-400"></i> 🐋 Top 10 Dusty Whales</h2>
+            <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="border-b border-white/10"><tr><th class="text-left py-2">#</th><th class="text-left">Wallet</th><th class="text-right">Dust accounts</th><th class="text-right">Recoverable SOL</th></tr></thead><tbody id="leaderboardBody"><tr><td colspan="4" class="text-center py-4 text-gray-400">Loading...</td></tr></tbody></table></div>
         </div>
 
-        <!-- Live Feed Card -->
         <div class="card p-6 mb-8">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-sync-alt text-teal-400"></i> 🕒 LIVE SCAN FEED</h2>
-            <div id="liveScansFeed" class="text-sm font-mono"><div class="text-center text-gray-400 py-4">Waiting for first scan...</div></div>
+            <h2 class="text-xl font-bold mb-4"><i class="fas fa-sync-alt text-teal-400"></i> 🕒 LIVE SCAN FEED</h2>
+            <div id="liveScansFeed" class="text-sm font-mono"><div class="text-center text-gray-400 py-4">Loading...</div></div>
         </div>
 
-        <!-- Footer -->
         <div class="text-center text-gray-500 text-xs border-t border-white/10 pt-6">
             ⚡ built for Faith ❤️ Paps Still Wants his Villa 😜<br>
             FAITH — No private keys, no wallet drains. Powered by Solana.
@@ -132,37 +68,32 @@
 
     <script>
         (async function() {
-            // ----- Mock data (fallback if real JSON fails) -----
+            // Mock data as fallback
             const MOCK_DATA = [
                 { Wallet: "HzBhg6WH4qhJZSj93cJtqZoCn8Cf2LaGR2vtYMT7QcKp", DustAccounts: 9, RecoverableSOL: 0.01835, Timestamp: new Date().toISOString() },
                 { Wallet: "GiuhJFChN86mPp3yd39N8FV3Ykcr1cGuBBgHbT2wU1Ug", DustAccounts: 12, RecoverableSOL: 0.02447, Timestamp: new Date().toISOString() },
                 { Wallet: "5ssybW6bJvoRjuMPeBTT6p7LMEjBdu7mDASaTdLqSCw6", DustAccounts: 8, RecoverableSOL: 0.01631, Timestamp: new Date().toISOString() }
             ];
 
-            // ----- CORS proxy fetch -----
-            const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
-            const JSON_URL = 'https://raw.githubusercontent.com/UkMarti/faithsol/main/scans/latest.json';
-            const FETCH_URL = CORS_PROXY + JSON_URL;
-
+            // Fetch from same domain – no CORS
             async function fetchData() {
                 try {
-                    const response = await fetch(FETCH_URL, { mode: 'cors', cache: 'no-store' });
+                    const response = await fetch('/scans/latest.json', { cache: 'no-store' });
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     const data = await response.json();
-                    console.log('Real data loaded');
+                    console.log('Real data loaded from same domain');
                     return data;
                 } catch (error) {
-                    console.warn('Using mock data');
+                    console.warn('Using mock data (real JSON not available)', error);
                     return MOCK_DATA;
                 }
             }
 
-            // Leaderboard
             async function loadLeaderboard() {
                 const tbody = document.getElementById('leaderboardBody');
                 const data = await fetchData();
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-400">No dust data yet</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-400">No data yet</td></tr>';
                     return;
                 }
                 const sorted = [...data].sort((a,b) => b.RecoverableSOL - a.RecoverableSOL).slice(0,10);
@@ -179,12 +110,11 @@
                 tbody.innerHTML = html;
             }
 
-            // Live feed
             async function loadLiveFeed() {
                 const container = document.getElementById('liveScansFeed');
                 const data = await fetchData();
                 if (!data || data.length === 0) {
-                    container.innerHTML = '<div class="text-center text-gray-400 py-4">No scans yet – scanner will run soon.</div>';
+                    container.innerHTML = '<div class="text-center text-gray-400 py-4">No scans yet</div>';
                     return;
                 }
                 const last20 = data.slice(-20).reverse();
@@ -203,27 +133,20 @@
                 container.innerHTML = html;
             }
 
-            // SOL price
             async function updateSolPrice() {
                 try {
                     const resp = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT');
                     const data = await resp.json();
                     document.getElementById('solPrice').innerHTML = `SOL: $${parseFloat(data.price).toFixed(2)} USD`;
                 } catch(e) {
-                    try {
-                        const resp2 = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
-                        const data2 = await resp2.json();
-                        document.getElementById('solPrice').innerHTML = `SOL: $${data2.solana.usd} USD`;
-                    } catch(e2) {
-                        document.getElementById('solPrice').innerHTML = 'SOL: $--.--';
-                    }
+                    document.getElementById('solPrice').innerHTML = 'SOL: $--.--';
                 }
             }
 
-            // ----- Phantom wallet and claim (unchanged but functional) -----
+            // Phantom wallet and claim
             const RPC = "https://api.mainnet-beta.solana.com";
             const TOKEN_PROGRAM = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
-            const RENT_PER_ACCOUNT = 0.00203928;
+            const RENT = 0.00203928;
             let connection = new solanaWeb3.Connection(RPC, "confirmed");
             let wallet = null;
             let walletPubkey = null;
@@ -247,7 +170,7 @@
             };
 
             async function scanWallet() {
-                resultsDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Scanning token accounts...';
+                resultsDiv.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Scanning...';
                 claimArea.classList.add("hidden");
                 try {
                     const accounts = await connection.getTokenAccountsByOwner(walletPubkey, { programId: TOKEN_PROGRAM });
@@ -257,15 +180,15 @@
                         if (info.value.uiAmount === 0) emptyPubkeys.push(acc.pubkey);
                     }
                     dustAccounts = emptyPubkeys;
-                    const totalSol = dustAccounts.length * RENT_PER_ACCOUNT;
+                    const totalSol = dustAccounts.length * RENT;
                     const fee = totalSol * 0.05;
                     const userGets = totalSol - fee;
                     resultsDiv.innerHTML = `
                         <div class="bg-black/40 rounded-xl p-4 border border-teal-500/30">
                             <div class="grid grid-cols-3 gap-4 text-center">
-                                <div><div class="stat-number text-3xl">${dustAccounts.length}</div><div class="text-xs">dust accounts</div></div>
-                                <div><div class="stat-number text-3xl">${totalSol.toFixed(5)} ◎</div><div class="text-xs">recoverable</div></div>
-                                <div><div class="stat-number text-3xl">${userGets.toFixed(5)} ◎</div><div class="text-xs">you receive (5% fee)</div></div>
+                                <div><div class="text-3xl font-bold text-teal-300">${dustAccounts.length}</div><div class="text-xs">dust accounts</div></div>
+                                <div><div class="text-3xl font-bold text-teal-300">${totalSol.toFixed(5)} ◎</div><div class="text-xs">recoverable</div></div>
+                                <div><div class="text-3xl font-bold text-teal-300">${userGets.toFixed(5)} ◎</div><div class="text-xs">you receive (5% fee)</div></div>
                             </div>
                         </div>
                     `;
@@ -292,19 +215,18 @@
                     const signed = await wallet.signTransaction(tx);
                     const sig = await connection.sendRawTransaction(signed.serialize());
                     await connection.confirmTransaction(sig, "confirmed");
-                    alert(`✅ Claim success!\nTX: ${sig}\nRecovered ~${(dustAccounts.length * RENT_PER_ACCOUNT * 0.95).toFixed(5)} SOL`);
+                    alert(`✅ Claim success!\nTX: ${sig}\nRecovered ~${(dustAccounts.length * RENT * 0.95).toFixed(5)} SOL`);
                     await scanWallet();
                 } catch(e) {
                     alert("Claim failed: " + e.message);
                 }
             }
 
-            // Initial load
             updateSolPrice();
             setInterval(updateSolPrice, 60000);
             await loadLeaderboard();
             await loadLiveFeed();
-            setInterval(() => { loadLiveFeed(); loadLeaderboard(); }, 30000);
+            setInterval(() => { loadLiveFeed(); loadLeaderboard(); }, 60000);
         })();
     </script>
 </body>
