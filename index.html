@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -76,10 +75,10 @@
         <!-- Step balloons -->
         <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 mb-10">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                <div class="tooltip-balloon" data-tip="Paste any Solana address">
+                <div class="tooltip-balloon" data-tip="Connect your Phantom wallet or paste address">
                     <div class="text-3xl">1️⃣</div>
-                    <div class="font-semibold"><i class="fas fa-paste"></i> PASTE</div>
-                    <div class="text-xs text-gray-400">Wallet address</div>
+                    <div class="font-semibold"><i class="fas fa-plug"></i> CONNECT</div>
+                    <div class="text-xs text-gray-400">Wallet</div>
                 </div>
                 <div class="tooltip-balloon" data-tip="We scan for dust (accounts <0.01 SOL)">
                     <div class="text-3xl">2️⃣</div>
@@ -94,12 +93,13 @@
             </div>
         </div>
 
-        <!-- Scanner card -->
+        <!-- Scanner + Connect Wallet -->
         <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 card-hover mb-10">
             <h2 class="text-xl font-bold mb-2"><i class="fas fa-meteor text-purple-400"></i> Check any wallet</h2>
             <div class="flex flex-col sm:flex-row gap-3 mt-3">
-                <input type="text" id="walletInput" placeholder="Solana address" class="flex-1 bg-black/30 border border-white/20 rounded-xl px-4 py-2 font-mono text-sm" value="G39AS8eXnq2ZQnsbixXSqNYos6Tfm9PcVzHiqynDJ8Wk">
+                <input type="text" id="walletInput" placeholder="Solana address" class="flex-1 bg-black/30 border border-white/20 rounded-xl px-4 py-2 font-mono text-sm" value="">
                 <button id="scanBtn" class="bg-gradient-to-r from-purple-600 to-pink-600 px-5 py-2 rounded-xl font-bold shadow-md"><i class="fas fa-rocket"></i> SCAN</button>
+                <button id="connectBtn" class="bg-purple-600 px-5 py-2 rounded-xl font-bold shadow-md"><i class="fas fa-plug"></i> Connect Phantom</button>
             </div>
             <div id="scanResult" class="mt-5 hidden"></div>
             <div id="scanError" class="mt-3 text-red-400 text-sm hidden"></div>
@@ -112,12 +112,11 @@
                 <table class="w-full text-sm">
                     <thead class="border-b border-white/10"><tr><th>#</th><th>Wallet</th><th>Dust accounts</th><th>Recoverable SOL</th></tr></thead>
                     <tbody id="leaderboardBody"><tr><td colspan="4" class="text-center py-4">Loading...</td></tr></tbody>
-                \]
-
+                驻足
             </div>
         </div>
 
-        <!-- LIVE SCAN FEED (new) -->
+        <!-- LIVE SCAN FEED -->
         <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5">
             <h2 class="text-xl font-bold mb-3 flex items-center gap-2"><i class="fas fa-sync-alt text-purple-400"></i> 🕒 LIVE SCAN FEED</h2>
             <div id="liveScansFeed" class="text-sm font-mono">
@@ -131,10 +130,12 @@
     </div>
 
     <script>
-        // RPC and helper functions
+        // ------------- RPC and helpers -------------
         const RPC_ENDPOINTS = ["https://api.mainnet-beta.solana.com","https://solana-rpc.publicnode.com","https://rpc.ankr.com/solana"];
         const TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
-        const RENT = 0.00203928;
+        const RENT_PER_ACCOUNT = 0.00203928;
+        let connection = new solanaWeb3.Connection(RPC_ENDPOINTS[0]);
+
         async function rpc(method, params) {
             for(let url of RPC_ENDPOINTS) {
                 try {
@@ -145,30 +146,46 @@
             }
             throw new Error("RPC failed");
         }
+
         async function getDust(addr) {
             let res = await rpc("getTokenAccountsByOwner", [addr,{programId:TOKEN_PROGRAM},{encoding:"jsonParsed"}]);
             let accounts = res.value || [];
-            let dustCount = 0;
+            let dustAccounts = [];
             for(let acc of accounts) {
                 let amount = parseFloat(acc.account.data.parsed.info.tokenAmount.amount) / Math.pow(10, acc.account.data.parsed.info.tokenAmount.decimals);
-                if(amount < 0.01 && amount > 0) dustCount++;
+                if(amount < 0.01 && amount > 0) {
+                    dustAccounts.push({
+                        pubkey: acc.pubkey,
+                        mint: acc.account.data.parsed.info.mint,
+                        owner: acc.account.data.parsed.info.owner
+                    });
+                }
             }
-            return { dustCount, estimatedSol: dustCount * RENT, totalAccounts: accounts.length };
+            return { dustCount: dustAccounts.length, estimatedSol: dustAccounts.length * RENT_PER_ACCOUNT, totalAccounts: accounts.length, dustAccounts };
         }
-        const WHALES = ["7VY2r9t1Sc3eKJnJXyJtV9yqYvQwt5oF8TzNkJZzrLqP","GghBqYfXqGdQYx5qHXVk2jXZzZtPqVgJkLwFyR3tVxX","5Q544fKrFom6G8KjQ2o8UyX9L7WqEdpYyRqJqEeFfPvV","HjM7YzRkWmKjQqJtU9zXbBvVzXoYpLkIoUyTrEwQcCv","4CgWzBvWjiVhDpNcLkPqQrUjYhTzXcVbNmKjHgFdDdF","8xYzWvXqLmNpOjRrSsTtUuVvWwXxYyZzAaBbCcDdEeFf","DdYzXwVtUqQrRpPoOnMlLkKjJhHgGfFdDcCbBaA1J","GxYzWvUtSrQpOnMlKjIhGfEdCbAzXwVyUuTtSsRrQqPp","DCAK4VnGxJmKgz5hJ7A6zjXZeYnH6FHGZzPcTf5oB1yK","9WzDXwLbmadYgRQVba1JdLCkQ1X9XGQaKdRkXZwbwhYc"];
-        async function loadLeaderboard() {
-            let tbody = document.getElementById('leaderboardBody');
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">Scanning whales...</td></tr>';
-            let items = [];
-            for(let addr of WHALES.slice(0,10)) {
+
+        // ------------- Wallet connection (Phantom) -------------
+        let phantomWallet = null;
+        let walletPublicKey = null;
+        const connectBtn = document.getElementById('connectBtn');
+        connectBtn.onclick = async () => {
+            if (window.solana && window.solana.isPhantom) {
                 try {
-                    let {dustCount,estimatedSol} = await getDust(addr);
-                    items.push({addr,dustCount,estimatedSol});
-                } catch(e){}
+                    const resp = await window.solana.connect();
+                    phantomWallet = window.solana;
+                    walletPublicKey = resp.publicKey.toString();
+                    connectBtn.innerText = `✅ ${walletPublicKey.slice(0,6)}...${walletPublicKey.slice(-4)}`;
+                    connectBtn.disabled = true;
+                    document.getElementById('walletInput').value = walletPublicKey;
+                    document.getElementById('scanBtn').click();
+                } catch(e) { alert('Connection rejected'); }
+            } else {
+                alert('Phantom wallet not installed. Get it from phantom.app');
             }
-            items.sort((a,b)=>b.estimatedSol - a.estimatedSol);
-            tbody.innerHTML = items.map((w,i)=>`<tr class="border-b border-white/5"><td class="py-2">${i+1}</td><td class="font-mono text-xs">${w.addr.slice(0,6)}...${w.addr.slice(-4)}</td><td class="text-right">${w.dustCount}</td><td class="text-right text-green-300">${w.estimatedSol.toFixed(4)} ◎</td></tr>`).join('');
-        }
+        };
+
+        // ------------- Scan and claim -------------
+        let lastDustAccounts = [];
         document.getElementById('scanBtn').onclick = async () => {
             let addr = document.getElementById('walletInput').value.trim();
             let resultDiv = document.getElementById('scanResult');
@@ -181,20 +198,19 @@
                 return;
             }
             try {
-                let {dustCount, estimatedSol, totalAccounts} = await getDust(addr);
+                let {dustCount, estimatedSol, totalAccounts, dustAccounts} = await getDust(addr);
+                lastDustAccounts = dustAccounts;
                 let fee = estimatedSol * 0.05;
                 let userGets = estimatedSol - fee;
                 let fillLevel = 0;
                 if (estimatedSol > 0.1) fillLevel = 3;
                 else if (estimatedSol > 0.01) fillLevel = 2;
                 else if (estimatedSol > 0) fillLevel = 1;
-                let meterHtml = `
-                    <div class="dust-meter">
-                        <div class="meter-line ${fillLevel >= 1 ? 'fill-1' : ''}"></div>
-                        <div class="meter-line ${fillLevel >= 2 ? 'fill-2' : ''}"></div>
-                        <div class="meter-line ${fillLevel >= 3 ? 'fill-3' : ''}"></div>
-                    </div>
-                `;
+                let meterHtml = `<div class="dust-meter"><div class="meter-line ${fillLevel >= 1 ? 'fill-1' : ''}"></div><div class="meter-line ${fillLevel >= 2 ? 'fill-2' : ''}"></div><div class="meter-line ${fillLevel >= 3 ? 'fill-3' : ''}"></div></div>`;
+                let claimButtonHtml = '';
+                if (dustCount > 0) {
+                    claimButtonHtml = `<div class="mt-4 text-center"><button id="realClaimBtn" class="bg-green-600 px-5 py-2 rounded-full text-sm font-bold">✨ CLAIM NOW</button><div class="text-xs text-gray-400 mt-1">Fee: 5% of recoverable SOL</div></div>`;
+                }
                 resultDiv.innerHTML = `
                     <div class="bg-black/40 rounded-xl p-4 border border-purple-500/30">
                         <div class="flex items-center gap-4 flex-wrap">
@@ -210,23 +226,70 @@
                             <div><div class="text-xl font-bold text-yellow-300">${dustCount}</div><div class="text-xs">dust accounts</div></div>
                             <div><div class="text-xl font-bold text-green-300">${userGets.toFixed(5)} ◎</div><div class="text-xs">you receive (5% fee)</div></div>
                         </div>
-                        ${dustCount > 0 ? `<div class="mt-4 text-center"><button class="bg-green-600 px-5 py-2 rounded-full text-sm font-bold">✨ CLAIM NOW (coming hours)</button><div class="text-xs text-gray-400 mt-1">Phantom deep link – safe, no private keys</div></div>` : `<div class="text-center text-green-200 mt-3">✨ No dust found! Your wallet is clean.</div>`}
+                        ${dustCount > 0 ? claimButtonHtml : '<div class="text-center text-green-200 mt-3">✨ No dust found! Your wallet is clean.</div>'}
                     </div>
                 `;
                 resultDiv.classList.remove('hidden');
+                if (dustCount > 0) {
+                    document.getElementById('realClaimBtn').onclick = async () => {
+                        if (!phantomWallet || !walletPublicKey) {
+                            alert('Please connect your Phantom wallet first');
+                            return;
+                        }
+                        try {
+                            const pubKey = new solanaWeb3.PublicKey(walletPublicKey);
+                            const instructions = [];
+                            for (let acc of lastDustAccounts) {
+                                const tokenAccountPubkey = new solanaWeb3.PublicKey(acc.pubkey);
+                                const ownerPubkey = new solanaWeb3.PublicKey(acc.owner);
+                                const ix = solanaWeb3.Token.createCloseAccountInstruction(
+                                    tokenAccountPubkey,
+                                    ownerPubkey,
+                                    ownerPubkey
+                                );
+                                instructions.push(ix);
+                            }
+                            const blockhash = (await connection.getRecentBlockhash()).blockhash;
+                            const tx = new solanaWeb3.Transaction({ feePayer: pubKey, recentBlockhash: blockhash });
+                            tx.add(...instructions);
+                            const signed = await phantomWallet.signTransaction(tx);
+                            const sig = await connection.sendRawTransaction(signed.serialize());
+                            await connection.confirmTransaction(sig, 'confirmed');
+                            alert(`✅ Claim successful!\nTX: https://solscan.io/tx/${sig}\nYou received ~${userGets.toFixed(5)} SOL (5% fee deducted).`);
+                            document.getElementById('scanBtn').click();
+                        } catch(err) {
+                            alert('Claim failed: ' + err.message);
+                        }
+                    };
+                }
             } catch(e) {
                 errorDiv.innerText = "Error: " + e.message;
                 errorDiv.classList.remove('hidden');
             }
         };
+
+        // ------------- Leaderboard and live feed -------------
+        const WHALES = ["7VY2r9t1Sc3eKJnJXyJtV9yqYvQwt5oF8TzNkJZzrLqP","GghBqYfXqGdQYx5qHXVk2jXZzZtPqVgJkLwFyR3tVxX","5Q544fKrFom6G8KjQ2o8UyX9L7WqEdpYyRqJqEeFfPvV","HjM7YzRkWmKjQqJtU9zXbBvVzXoYpLkIoUyTrEwQcCv","4CgWzBvWjiVhDpNcLkPqQrUjYhTzXcVbNmKjHgFdDdF","8xYzWvXqLmNpOjRrSsTtUuVvWwXxYyZzAaBbCcDdEeFf","DdYzXwVtUqQrRpPoOnMlLkKjJhHgGfFdDcCbBaA1J","GxYzWvUtSrQpOnMlKjIhGfEdCbAzXwVyUuTtSsRrQqPp","DCAK4VnGxJmKgz5hJ7A6zjXZeYnH6FHGZzPcTf5oB1yK","9WzDXwLbmadYgRQVba1JdLCkQ1X9XGQaKdRkXZwbwhYc"];
+        async function loadLeaderboard() {
+            let tbody = document.getElementById('leaderboardBody');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4">Scanning whales......</td></tr>';
+            let items = [];
+            for(let addr of WHALES.slice(0,10)) {
+                try {
+                    let {dustCount,estimatedSol} = await getDust(addr);
+                    items.push({addr,dustCount,estimatedSol});
+                } catch(e){}
+            }
+            items.sort((a,b)=>b.estimatedSol - a.estimatedSol);
+            tbody.innerHTML = items.map((w,i)=>`<tr class="border-b border-white/5"><td class="py-2">${i+1}</td><td class="font-mono text-xs">${w.addr.slice(0,6)}...${w.addr.slice(-4)}</td><td class="text-right">${w.dustCount}</td><td class="text-right text-green-300">${w.estimatedSol.toFixed(4)} ◎</td></tr>`).join('');
+        }
         loadLeaderboard();
 
-        // Live scan feed fetcher
         async function fetchLiveScans() {
             try {
                 const url = 'https://raw.githubusercontent.com/UkMarti/faithsol/main/scans/latest.json?t=' + Date.now();
                 const response = await fetch(url);
-                if (!response.ok) throw new Error('Not found');
+                if (!response.ok) throw new Error();
                 const data = await response.json();
                 const container = document.getElementById('liveScansFeed');
                 if (!data || data.length === 0) {
@@ -234,19 +297,21 @@
                     return;
                 }
                 const last20 = data.slice(-20).reverse();
-                let html = '<div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead><tr class="border-b border-white/20"><th>Wallet</th><th>Dust accounts</th><th>Recoverable SOL</th><th>Time (UTC)</th></tr></thead><tbody>';
+                let html = '<div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead><tr><th>Wallet</th><th>Dust</th><th>Recoverable SOL</th><th>Time</th></tr></thead><tbody>';
                 for (let s of last20) {
                     let shortAddr = s.Wallet.slice(0,6) + '...' + s.Wallet.slice(-4);
-                    html += `<tr class="border-b border-white/10"><td class="py-2 font-mono">${shortAddr}</td><td>${s.DustAccounts}</td><td class="text-green-300">${s.RecoverableSOL.toFixed(6)} ◎</td><td>${s.Timestamp.slice(5,16)}</td></tr>`;
+                    html += `<tr class="border-b border-white/10"><td class="py-1 font-mono">${shortAddr}</td><td>${s.DustAccounts}</td><td class="text-green-300">${s.RecoverableSOL.toFixed(6)} ◎</td><td>${s.Timestamp.slice(5,16)}</td></tr>`;
                 }
-                html += '</tbody></table></div><div class="text-right text-xs text-gray-400 mt-2">Last update: ' + new Date().toLocaleTimeString() + '</div>';
+                html += '</tbody></table><div class="text-right text-xs text-gray-400 mt-2">Last update: ' + new Date().toLocaleTimeString() + '</div>';
                 container.innerHTML = html;
-            } catch (e) {
+            } catch(e) {
                 document.getElementById('liveScansFeed').innerHTML = '<div class="text-center text-gray-400 py-4">Awaiting first scan...</div>';
             }
         }
         fetchLiveScans();
         setInterval(fetchLiveScans, 15000);
     </script>
+    <!-- Include Solana Web3.js from CDN -->
+    <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.js"></script>
 </body>
 </html>
