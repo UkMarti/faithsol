@@ -3,157 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAITH – Return Your Crypto Dust</title>
+    <title>FAITH | Ultra-Secure Dust Recovery</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { 
-            background: #05020a; 
-            color: white; 
-            font-family: 'Inter', sans-serif; 
-            background-image: radial-gradient(circle at center, #1a0b2e 0%, #05020a 100%);
-            min-height: 100vh;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Inter:wght@900&display=swap');
         
-        .safety-header {
-            background: linear-gradient(90deg, transparent, rgba(153, 69, 255, 0.3), transparent);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
+        body { 
+            background: #020105; 
+            color: #e2e8f0; 
+            font-family: 'Space Grotesk', sans-serif;
+            background-image: 
+                radial-gradient(circle at 50% -20%, #2e1065 0%, transparent 50%),
+                radial-gradient(circle at 0% 100%, #0f172a 0%, transparent 40%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        .reactor-ring {
-            width: 320px; height: 320px;
-            border: 2px solid #00f2ff;
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.4), inset 0 0 30px rgba(0, 242, 255, 0.2);
+        .premium-banner {
+            background: rgba(153, 69, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(153, 69, 255, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            animation: breath 4s ease-in-out infinite;
+        }
+
+        @keyframes breath {
+            0%, 100% { opacity: 0.6; text-shadow: 0 0 5px #a855f7; }
+            50% { opacity: 1; text-shadow: 0 0 15px #a855f7; }
+        }
+
+        .reactor-core {
+            width: 360px; height: 360px;
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            box-shadow: 0 0 60px rgba(0, 242, 255, 0.1), inset 0 0 40px rgba(0, 242, 255, 0.05);
             border-radius: 50%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(255, 255, 255, 0.01);
         }
 
         .sol-bar {
-            width: 180px; height: 42px; margin: 8px 0;
-            background: rgba(255, 255, 255, 0.05);
+            width: 220px; height: 48px; margin: 10px 0;
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            transform: skewX(-20deg);
+            transform: skewX(-18deg);
             display: flex; align-items: center; justify-content: center;
-            font-weight: 900; font-size: 0.75rem; transition: all 0.5s ease;
+            font-weight: 700; font-size: 0.8rem; letter-spacing: 0.1em;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         .active-bar {
-            background: linear-gradient(90deg, #9945FF, #14F195);
-            border: none; color: black; box-shadow: 0 0 20px rgba(20, 241, 149, 0.5);
+            background: linear-gradient(90deg, #9945FF 0%, #14F195 100%);
+            border: none; color: #000;
+            box-shadow: 0 0 30px rgba(20, 241, 149, 0.4);
         }
 
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .claim-btn {
-            background: linear-gradient(to right, #ff8a00, #ff2d00);
-            border: 2px solid #ffcc00;
-            box-shadow: 0 0 25px rgba(255, 45, 0, 0.6);
-            transition: transform 0.2s;
+        .btn-claim {
+            background: linear-gradient(90deg, #f97316 0%, #ef4444 100%);
+            border: 1px solid #fb923c;
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
         }
-        .claim-btn:hover { transform: scale(1.05); }
+
+        .btn-claim:hover { transform: scale(1.05) translateY(-2px); box-shadow: 0 0 60px rgba(239, 68, 68, 0.5); }
+
+        .stat-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.2em; }
+        .stat-value { font-family: 'Inter', sans-serif; font-weight: 900; }
     </style>
 </head>
-<body class="flex flex-col">
+<body>
 
-    <!-- TOP HEADER -->
-    <div class="safety-header w-full py-3 text-center text-[10px] font-black text-cyan-400">
+    <div class="premium-banner w-full py-4 text-center text-[11px] font-bold text-purple-400">
         YOUR SOL IS SAFE WITH FAITH
     </div>
 
-    <div class="flex-grow flex flex-col items-center justify-center p-6 space-y-12">
-        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+    <div class="flex-grow flex items-center justify-center p-8">
+        <div class="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
             
-            <!-- LEFT PANEL: CONNECTION & FEE -->
-            <div class="space-y-6">
-                <div class="glass-panel p-4">
-                    <p class="text-[9px] text-gray-500 uppercase tracking-widest mb-3">Network: Solana Mainnet</p>
-                    <button id="connectBtn" class="w-full bg-white/10 hover:bg-white/20 py-3 rounded font-bold text-xs transition">
+            <!-- LEFT -->
+            <div class="space-y-8">
+                <div class="glass-card p-6">
+                    <p class="stat-label mb-4 text-cyan-400">Network: Solana Mainnet</p>
+                    <button id="connectBtn" class="w-full bg-white/5 border border-white/10 hover:bg-white/10 py-4 rounded-xl font-bold text-xs tracking-widest transition">
                         [ ⚡ CONNECT PHANTOM ]
                     </button>
-                    <div id="solPrice" class="mt-3 text-[10px] text-center text-emerald-400 font-bold uppercase tracking-widest">Loading SOL Price...</div>
+                    <div id="solPrice" class="mt-4 text-xs text-center text-emerald-400 font-medium">FETCHING LIVE SOL PRICE...</div>
                 </div>
 
-                <div class="glass-panel p-8 text-center border-l-4 border-emerald-500">
-                    <h2 class="text-3xl font-black mb-1">ONLY 5%</h2>
-                    <p class="text-emerald-400 text-xs font-bold tracking-widest mb-4">DUST RECOVERY FEE</p>
-                    <i class="fas fa-check-circle text-5xl text-emerald-500"></i>
+                <div class="glass-card p-10 text-center border-t-2 border-emerald-500/50">
+                    <h2 class="text-4xl font-black mb-1 italic">ONLY 5%</h2>
+                    <p class="text-emerald-400 text-xs font-bold tracking-[0.3em] mb-6">DUST RECOVERY FEE</p>
+                    <div class="inline-block p-4 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                        <i class="fas fa-shield-check text-4xl text-emerald-500"></i>
+                    </div>
                 </div>
             </div>
 
-            <!-- CENTER: THE INTERACTIVE REACTOR -->
+            <!-- CENTER -->
             <div class="flex flex-col items-center">
-                <h1 class="text-5xl font-black tracking-tighter mb-8 glow-text">FAITH</h1>
+                <h1 class="text-7xl font-black tracking-tighter mb-10 italic text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">FAITH</h1>
                 
-                <div class="reactor-ring">
+                <div class="reactor-core">
                     <div id="bar1" class="sol-bar uppercase">Status: Idle</div>
-                    <div id="bar2" class="sol-bar uppercase">Scan Results: --</div>
-                    <div id="bar3" class="sol-bar text-[9px] uppercase tracking-widest">Fee Gauge: 0%</div>
+                    <div id="bar2" class="sol-bar uppercase">Scan Ready: --</div>
+                    <div id="bar3" class="sol-bar text-[10px] uppercase tracking-widest">Fee Gauge: 0%</div>
                 </div>
 
-                <div class="mt-10 h-16">
-                    <button id="claimBtn" class="claim-btn px-10 py-4 rounded-xl font-black text-xl hidden uppercase">
-                        [ 💰 Claim SOL ]
+                <div class="mt-12 h-20">
+                    <button id="claimBtn" class="btn-claim px-12 py-5 rounded-2xl font-black text-2xl hidden">
+                        [ 💰 CLAIM SOL ]
                     </button>
                 </div>
             </div>
 
-            <!-- RIGHT: SECURITY & STATS -->
-            <div class="space-y-6">
-                <div class="flex gap-4">
-                    <div class="glass-panel p-4 flex-1 text-center">
-                        <p class="text-[9px] text-gray-500 uppercase mb-1">Recoverable</p>
-                        <p id="solVal" class="text-2xl font-black text-emerald-400">0.00 ◎</p>
+            <!-- RIGHT -->
+            <div class="space-y-8">
+                <div class="flex gap-6">
+                    <div class="glass-card p-6 flex-1 text-center">
+                        <p class="stat-label mb-2">Recoverable</p>
+                        <p id="solVal" class="stat-value text-3xl text-emerald-400">0.00 ◎</p>
                     </div>
-                    <div class="glass-panel p-4 flex-1 text-center">
-                        <p class="text-[9px] text-gray-500 uppercase mb-1">Accounts</p>
-                        <p id="folderVal" class="text-2xl font-black">0</p>
+                    <div class="glass-card p-6 flex-1 text-center">
+                        <p class="stat-label mb-2">Accounts</p>
+                        <p id="folderVal" class="stat-value text-3xl">0</p>
                     </div>
                 </div>
 
-                <div class="glass-panel p-6 border-r-4 border-purple-500">
-                    <p class="text-[9px] text-gray-500 uppercase mb-3">Security & Superiority</p>
-                    <p class="text-xs font-black mb-2 uppercase">Stronger Security Than Sol Incinerator <i class="fas fa-shield-alt ml-1"></i></p>
-                    <p class="text-[10px] text-purple-400 leading-tight">FAITHSOL BEATS SOL INCINERATOR HANDS DOWN ON EVERYTHING</p>
+                <div class="glass-card p-8 border-r-2 border-purple-500/50">
+                    <p class="stat-label mb-4">Security & Superiority</p>
+                    <p class="text-sm font-bold mb-3 uppercase leading-tight">Stronger Security Than Sol Incinerator</p>
+                    <p class="text-xs text-purple-400 font-light leading-relaxed mb-6">FAITHSOL BEATS SOL INCINERATOR HANDS DOWN ON EVERYTHING</p>
                     
-                    <div class="flex justify-between mt-4 text-[9px] text-emerald-400 font-bold uppercase">
-                        <span><i class="fas fa-bolt"></i> Speed</span>
-                        <span><i class="fas fa-percent"></i> Fee</span>
-                        <span><i class="fas fa-chart-bar"></i> Clarity</span>
+                    <div class="flex justify-between items-center px-2">
+                        <div class="text-center"><i class="fas fa-bolt text-emerald-400 mb-2"></i><p class="text-[9px] font-bold">SPEED</p></div>
+                        <div class="text-center"><i class="fas fa-percent text-emerald-400 mb-2"></i><p class="text-[9px] font-bold">FEE</p></div>
+                        <div class="text-center"><i class="fas fa-eye text-emerald-400 mb-2"></i><p class="text-[9px] font-bold">CLARITY</p></div>
+                        <div class="text-center"><i class="fas fa-lock text-emerald-400 mb-2"></i><p class="text-[9px] font-bold">TRUST</p></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- FOOTER -->
-    <footer class="p-8 text-center text-gray-600 text-[10px] space-y-1">
+    <footer class="p-10 text-center text-gray-500 text-[11px] space-y-2 opacity-50">
         <p>⚡ Built for FAITH ❤️ Paps still wants his villa 😜</p>
-        <p class="uppercase tracking-widest">FAITH - Clean. Scan. Collect. Secure on Solana.</p>
+        <p class="font-bold tracking-[0.5em] uppercase">FAITH - Clean. Scan. Collect. Secure on Solana.</p>
     </footer>
 
     <script>
         (async function() {
-            // --- Price Fetcher ---
             async function updateSolPrice() {
                 try {
                     const resp = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT');
                     const data = await resp.json();
-                    document.getElementById('solPrice').innerText = `SOL: $${parseFloat(data.price).toFixed(2)} USD`;
+                    document.getElementById('solPrice').innerHTML = `<span class="opacity-50">SOL:</span> $${parseFloat(data.price).toFixed(2)} USD`;
                 } catch (e) { document.getElementById('solPrice').innerText = 'SOL: $--.--'; }
             }
             updateSolPrice();
             setInterval(updateSolPrice, 60000);
 
-            // --- Solana Logic ---
             const RPC = "https://api.mainnet-beta.solana.com";
             const TOKEN_PROGRAM = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
             const RENT = 0.00203928;
@@ -166,18 +186,18 @@
             const bars = [document.getElementById('bar1'), document.getElementById('bar2'), document.getElementById('bar3')];
 
             connectBtn.onclick = async () => {
-                if (!window.solana?.isPhantom) return alert("Install Phantom");
+                if (!window.solana?.isPhantom) return alert("Please install Phantom");
                 try {
                     const resp = await window.solana.connect();
                     walletPubkey = resp.publicKey;
-                    connectBtn.innerText = "CONNECTED ✅";
-                    connectBtn.classList.add('text-emerald-400');
+                    connectBtn.innerHTML = "WALLET CONNECTED <i class='fas fa-check-circle ml-2'></i>";
+                    connectBtn.classList.add('text-emerald-400', 'border-emerald-500/30');
                     await scanWallet();
-                } catch(e) { alert("Rejected"); }
+                } catch(e) { console.error(e); }
             };
 
             async function scanWallet() {
-                bars[0].innerText = "Scanning...";
+                bars[0].innerText = "SCANNING...";
                 try {
                     const accounts = await connection.getTokenAccountsByOwner(walletPubkey, { programId: TOKEN_PROGRAM });
                     let empty = [];
@@ -187,11 +207,10 @@
                     }
                     dustAccounts = empty;
                     
-                    // Update Reactor UI
                     bars.forEach(b => b.classList.add('active-bar'));
                     bars[0].innerText = "SUCCESS!";
-                    bars[1].innerText = `${dustAccounts.length} DUST FOUND`;
-                    bars[2].innerText = `FEE: 5% APPLIED`;
+                    bars[1].innerText = `${dustAccounts.length} ACCOUNTS`;
+                    bars[2].innerText = `FEE: 5% SECURED`;
 
                     const totalSol = dustAccounts.length * RENT;
                     document.getElementById('solVal').innerText = `${totalSol.toFixed(4)} ◎`;
@@ -203,24 +222,6 @@
                     }
                 } catch(e) { bars[0].innerText = "SCAN ERROR"; }
             }
-
-            claimBtn.onclick = async () => {
-                try {
-                    const instructions = dustAccounts.map(pubkey => 
-                        solanaWeb3.Token.createCloseAccountInstruction(TOKEN_PROGRAM, pubkey, walletPubkey, walletPubkey, [])
-                    );
-                    const transaction = new solanaWeb3.Transaction().add(...instructions);
-                    transaction.feePayer = walletPubkey;
-                    transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-                    
-                    const signed = await window.solana.signTransaction(transaction);
-                    const sig = await connection.sendRawTransaction(signed.serialize());
-                    await connection.confirmTransaction(sig);
-                    
-                    alert("Success! Check your wallet.");
-                    location.reload();
-                } catch(e) { alert("Claim Failed: " + e.message); }
-            };
         })();
     </script>
 </body>
