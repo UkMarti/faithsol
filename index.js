@@ -1,12 +1,10 @@
-import express from 'express';
-import fetch from 'node-fetch';
+const express = require('express');
+const fetch = require('node-fetch');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-
-// Hardcoded Helius API key – replace with your own if needed
 const HELIUS_API_KEY = "6d7bfc0c-2269-4595-ba5c-be854541d68c";
-
 const RPC_URL = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
 
 async function rpcCall(method, params) {
@@ -31,6 +29,16 @@ async function getSolPrice() {
   return { price: jupData.data?.So11111111111111111111111111111111111111112?.price, source: 'jupiter' };
 }
 
+// Serve your existing index.html
+app.get('/', (req, res) => {
+  try {
+    const html = fs.readFileSync('./index.html', 'utf8');
+    res.send(html);
+  } catch (e) {
+    res.json({ service: 'FaithSol API', endpoints: ['/price', '/time', '/wallet/:address'] });
+  }
+});
+
 app.get('/time', (req, res) => {
   res.json({ now: new Date().toISOString(), unix: Math.floor(Date.now() / 1000) });
 });
@@ -46,7 +54,9 @@ app.get('/price', async (req, res) => {
 
 app.get('/wallet/:address', async (req, res) => {
   const { address } = req.params;
-  if (!address || address.length < 32) return res.status(400).json({ error: 'Invalid address' });
+  if (!address || address.length < 32) {
+    return res.status(400).json({ error: 'Invalid Solana address' });
+  }
   try {
     const balanceRes = await rpcCall('getBalance', [address]);
     const balance = balanceRes.result?.value / 1e9 || 0;
@@ -54,10 +64,6 @@ app.get('/wallet/:address', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-
-app.get('/', (req, res) => {
-  res.json({ service: 'FaithSol API', endpoints: ['/price', '/time', '/wallet/:address'] });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
