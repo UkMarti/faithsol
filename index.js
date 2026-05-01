@@ -17,19 +17,26 @@ async function rpcCall(method, params) {
 }
 
 async function getSolPrice() {
+  // Helius price API
   try {
     const res = await fetch(`https://api.helius.xyz/v1/price?apiKey=${HELIUS_API_KEY}`);
     if (res.ok) {
       const data = await res.json();
-      return { price: data.price, source: 'helius' };
+      if (data.price) return { price: data.price, source: 'helius' };
     }
   } catch (e) {}
-  const jupRes = await fetch('https://price.jup.ag/v4/price?ids=So11111111111111111111111111111111111111112');
-  const jupData = await jupRes.json();
-  return { price: jupData.data?.So11111111111111111111111111111111111111112?.price, source: 'jupiter' };
+
+  // Jupiter price API (working URL – NOT price.jup.ag)
+  try {
+    const jupRes = await fetch('https://api.jup.ag/price/v2?ids=So11111111111111111111111111111111111111112');
+    const jupData = await jupRes.json();
+    const price = jupData.data?.So11111111111111111111111111111111111111112?.price;
+    if (price) return { price: parseFloat(price), source: 'jupiter' };
+  } catch (e) {}
+
+  throw new Error('Unable to fetch SOL price from any source');
 }
 
-// Serve your existing index.html
 app.get('/', (req, res) => {
   try {
     const html = fs.readFileSync('./index.html', 'utf8');
@@ -46,7 +53,7 @@ app.get('/time', (req, res) => {
 app.get('/price', async (req, res) => {
   try {
     const { price, source } = await getSolPrice();
-    res.json({ sol: { usd: parseFloat(price) }, source });
+    res.json({ sol: { usd: price }, source });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
