@@ -194,7 +194,7 @@ I scan Solana wallets for hidden locked SOL\\. *No wallet connection needed* —
 /web — faithsol\\.com`);
 
   if (text === '/alerts') {
-    if (!subs.includes(id)) { subs.push(id); saveSubs(); return tgSend(id, '✅ *Subscribed to daily alerts\\!*\n\nEvery morning at 9am UTC you\\'ll get the top 10 wallets with most unclaimed dust\\.'); }
+    if (!subs.includes(id)) { subs.push(id); saveSubs(); return tgSend(id, `✅ *Subscribed to daily alerts\\!*\n\nEvery morning at 9am UTC you\\'ll get the top 10 wallets with most unclaimed dust\\.`); }
     else { subs = subs.filter(s => s !== id); saveSubs(); return tgSend(id, '🔕 Unsubscribed from daily alerts\\.'); }
   }
 
@@ -224,7 +224,7 @@ Fee: just *5%* — competitors charge up to 20%
     return doScan(id, addr);
   }
 
-  return tgSend(id, 'Just *paste your Solana wallet address* and I\\'ll scan it instantly\\! 👆');
+  return tgSend(id, `Just *paste your Solana wallet address* and I\\'ll scan it instantly\\! 👆`);
 }
 
 async function doScan(chatId, addr) {
