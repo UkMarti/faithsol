@@ -21,7 +21,7 @@ const TOKEN22    = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb';
 const RENT       = 0.00203928;
 const SCAN_INTERVAL = 3 * 60 * 1000; // 1 wallet per 3 mins = 480/day
 
-const DATA_DIR   = path.join(__dirname, 'data');
+const DATA_DIR   = "/tmp/faithdata";
 const SCANS_FILE = path.join(DATA_DIR, 'scans.json');
 const STATS_FILE = path.join(DATA_DIR, 'stats.json');
 const SUBS_FILE  = path.join(DATA_DIR, 'subs.json');
